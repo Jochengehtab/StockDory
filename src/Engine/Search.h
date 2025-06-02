@@ -855,7 +855,11 @@ namespace StockDory
             uint8_t quietMoves = 0;
             for (uint8_t i = 0; i < moves.Count(); i++) {
                 const Move move  = moves[i];
-                const bool quiet = Board[move.To()].Piece() == NAP;
+
+                const Piece movingPiece = Board[move.From()].Piece();
+                const Piece targetPiece = Board[move.To  ()].Piece();
+
+                const bool quiet = targetPiece == NAP;
 
                 quietMoves += quiet;
 
@@ -941,6 +945,9 @@ namespace StockDory
                         // If our last move gave check to the opponent, we should try to reduce the search depth less as
                         // the move may be tactical and in certain cases, extend the search depth instead
                         if (Board.Checked<OColor>()) r--;
+
+                        // We reduce less if the move has a good history score and more if it has a bad history score
+                        r -= History[Color][movingPiece][move.To()] / (HistoryLimit / 4);
 
                         evaluation = -PVS<OColor, false, false>(
                             ply + 1,
